@@ -7,12 +7,11 @@
     <title>Greetings - Introduction to Signing</title>
     <style>
         html.dark-mode {
-          background-color: #121212; /* Your dark mode background */
-          color: #f5f5f5;            /* Dark mode text color */
+          background-color: #121212;
+          color: #f5f5f5;
         }
-      </style>
-      
-      <script>
+    </style>
+    <script>
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add("dark-mode");
@@ -21,196 +20,184 @@
     <link rel="stylesheet" href="../../css/style.css">
 
     <!-- MediaPipe Hands -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="/assets/mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script> <!-- ✅ ADD THIS -->
+
 </head>
 
 <body>
 
-    <header class="navbar">
-        <div class="nav-container">
-            <div class="logo">Sign Me Up!</div>
-            <nav class="nav-links">
-                <a href="../../index.html#about">About</a>
-                <a href="../../index.html#modules">Modules</a>
-                <a href="../../index.html#contact">Contact</a>
-                <button id="theme-toggle" aria-label="Toggle dark mode" class="theme-toggle-button">🌙</button>
-            </nav>
-        </div>
-    </header>
-
-    <section class="module-page fade-in">
-        <h1><span class="highlight">Greetings</span></h1>
-        <p>Practice each greeting sign below. Perform each sign correctly <strong>3 times</strong> to continue.</p>
-
-        <!-- Greeting Sections -->
-        <div class="lesson-section" data-gesture="hello">
-            <h2>"Hello" Sign</h2>
-            <p>Raise your hand and wave gently to say "Hello."</p>
-            <button class="outline-button start-btn">Start Camera</button>
-            <p class="status">Waiting for action...</p>
-            <video class="input_video" width="640" height="480" autoplay playsinline></video>
-            <canvas class="output_canvas" width="640" height="480"></canvas>
-        </div>
-
-        <div class="lesson-section" data-gesture="goodbye">
-            <h2>"Goodbye" Sign</h2>
-            <p>Wave your hand sideways gently to say "Goodbye."</p>
-            <button class="outline-button start-btn">Start Camera</button>
-            <p class="status">Waiting for action...</p>
-            <video class="input_video" width="640" height="480" autoplay playsinline></video>
-            <canvas class="output_canvas" width="640" height="480"></canvas>
-        </div>
-
-        <div class="lesson-section" data-gesture="thankyou">
-            <h2>"Thank You" Sign</h2>
-            <p>Touch your chin and extend your hand forward to say "Thank you."</p>
-            <button class="outline-button start-btn">Start Camera</button>
-            <p class="status">Waiting for action...</p>
-            <video class="input_video" width="640" height="480" autoplay playsinline></video>
-            <canvas class="output_canvas" width="640" height="480"></canvas>
-        </div>
-
-        <a href="../intro.html" class="outline-button">Back to Introduction</a>
-    </section>
-
-    <footer>
-        <p>Created with care by CodexAmmar 💛</p>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const completedLessons = JSON.parse(localStorage.getItem('completedLessons')) || {};
-            const lessonKey = 'intro_greetings';
-            const sections = document.querySelectorAll('.lesson-section');
-
-            let currentSection = null;
-            let correctCounter = 0;
-
-            sections.forEach(section => {
-                const btn = section.querySelector('.start-btn');
-                const status = section.querySelector('.status');
-                const videoElement = section.querySelector('.input_video');
-                const canvasElement = section.querySelector('.output_canvas');
-                const canvasCtx = canvasElement.getContext('2d');
-                const gestureType = section.getAttribute('data-gesture');
-
-                let camera, hands;
-
-                btn.addEventListener('click', () => {
-                    if (currentSection !== section) {
-                        correctCounter = 0;
-                        currentSection = section;
-                    }
-
-                    btn.disabled = true;
-                    status.textContent = 'Initializing camera...';
-
-                    hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-                    hands.setOptions({
-                        maxNumHands: 1,
-                        minDetectionConfidence: 0.7,
-                        minTrackingConfidence: 0.7
-                    });
-
-                    hands.onResults((results) => {
-                        canvasCtx.save();
-                        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
-                        // Flip the canvas horizontally
-                        canvasCtx.scale(-1, 1);
-                        canvasCtx.translate(-canvasElement.width, 0);
-
-                        // Draw the mirrored webcam feed
-                        canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-
-                        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                            console.log('Hand detected:', results.multiHandLandmarks);
-                            const landmarks = results.multiHandLandmarks[0];
-
-                            // 🎯 Draw the hand skeleton lines and dots
-                            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
-                            drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
-
-                            // 🎯 Perform detection
-                            if (isCorrectGesture(landmarks, gestureType)) {
-                                correctCounter++;
-                                status.textContent = `Good job! (${correctCounter}/3)`;
-
-                                // ✅ Draw a big green checkmark if correct
-                                canvasCtx.font = "50px Arial";
-                                canvasCtx.fillStyle = "lime";
-                                canvasCtx.fillText("✅", 20, 60);
-
-                                if (correctCounter >= 3) {
-                                    status.textContent = `Gesture "${gestureType}" completed! ✅`;
-                                    camera.stop();
-                                    btn.disabled = true;
-                                    checkAllCompleted();
-                                }
-                            } else {
-                                // ❌ Draw a red X if wrong
-                                canvasCtx.font = "50px Arial";
-                                canvasCtx.fillStyle = "red";
-                                canvasCtx.fillText("❌", 20, 60);
-                            }
-                        }
-
-                        canvasCtx.restore();
-                    });
-
-                    camera = new Camera(videoElement, {
-                        onFrame: async () => {
-                            if (status.textContent === 'Initializing camera...') {
-                                status.textContent = 'Camera ready! Perform your sign!';
-                            }
-                            await hands.send({ image: videoElement });
-                        },
-                        width: 640,
-                        height: 480
-                    });
-                    camera.start();
-                });
-            });
-
-            function isCorrectGesture(landmarks, gestureType) {
-                // Simple placeholder logic; Replace this with your actual gesture-detection
-                switch (gestureType) {
-                    case 'hello':
-                        const wrist = landmarks[0];  // base of palm
-                        const indexTip = landmarks[8]; // tip of index finger
-                        const middleTip = landmarks[12]; // tip of middle finger
-                        const pinkyTip = landmarks[20]; // tip of pinky
-
-                        const palmHeight = Math.abs(indexTip.y - wrist.y);
-                        const pinkySpread = Math.abs(pinkyTip.x - indexTip.x);
-
-                        return (
-                            indexTip.y < wrist.y &&   // hand is upright
-                            palmHeight > 0.2 &&       // hand is open enough
-                            pinkySpread > 0.2          // hand is spread out
-                        );
-                    case 'goodbye':
-                        return landmarks[4].x > landmarks[20].x; // simplistic wave side
-                    case 'thankyou':
-                        return landmarks[8].y > landmarks[6].y; // simplistic forward motion
-                    default:
-                        return false;
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">Sign Me Up!</div>
+      <nav class="nav-links">
+        <a href="../../index.html#about">About</a>
+        <a href="../../index.html#modules">Modules</a>
+        <a href="../../index.html#contact">Contact</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" class="theme-toggle-button">🌙</button>
+      </nav>
+    </div>
+  </header>
+  <section class="module-page fade-in">
+    <h1><span class="highlight">Greetings</span></h1>
+    <p>Practice each greeting sign below. Perform each sign correctly <strong>3 times</strong> to continue.</p>
+  
+    <div class="lesson-section" data-gesture="hello">
+      <h2>"Hello" Sign</h2>
+      <p>Raise your hand and wave gently to say "Hello."</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <video class="input_video" width="640" height="480" autoplay playsinline></video>
+      <canvas class="output_canvas" width="640" height="480"></canvas>
+    </div>
+  
+    <div class="lesson-section" data-gesture="goodbye">
+      <h2>"Goodbye" Sign</h2>
+      <p>Wave your hand sideways gently to say "Goodbye."</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <video class="input_video" width="640" height="480" autoplay playsinline></video>
+      <canvas class="output_canvas" width="640" height="480"></canvas>
+    </div>
+  
+    <div class="lesson-section" data-gesture="thankyou">
+      <h2>"Thank You" Sign</h2>
+      <p>Touch your chin and extend your hand forward to say "Thank you."</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <video class="input_video" width="640" height="480" autoplay playsinline></video>
+      <canvas class="output_canvas" width="640" height="480"></canvas>
+    </div>
+  
+    <a href="../intro.html" class="outline-button">Back to Introduction</a>
+  </section>
+  
+  <footer>
+    <p>Created with care by CodexAmmar 💛</p>
+  </footer>
+  <script type="module">
+  
+    document.addEventListener('DOMContentLoaded', async () => {
+      const completedLessons = JSON.parse(localStorage.getItem('completedLessons')) || {};
+      const lessonKey = 'intro_greetings';
+      const sections = document.querySelectorAll('.lesson-section');
+  
+      let currentSection = null;
+      let correctCounter = 0;
+  
+      const hands = new Hands({
+        locateFile: (file) => `/assets/mediapipe/hands/${file}`
+      });
+  
+      sections.forEach(section => {
+        const btn = section.querySelector('.start-btn');
+        const status = section.querySelector('.status');
+        const videoElement = section.querySelector('.input_video');
+        const canvasElement = section.querySelector('.output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const gestureType = section.getAttribute('data-gesture');
+  
+        let camera;
+  
+        btn.addEventListener('click', () => {
+          if (currentSection !== section) {
+            correctCounter = 0;
+            currentSection = section;
+          }
+  
+          btn.disabled = true;
+          status.textContent = 'Initializing camera...';
+  
+          hands.setOptions({
+            modelComplexity: 1,
+            maxNumHands: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+          });
+  
+          hands.onResults((results) => {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.scale(-1, 1);
+            canvasCtx.translate(-canvasElement.width, 0);
+  
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+  
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+              const landmarks = results.multiHandLandmarks[0];
+              drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
+              drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
+  
+              if (isCorrectGesture(landmarks, gestureType)) {
+                correctCounter++;
+                status.textContent = `Good job! (${correctCounter}/3)`;
+                canvasCtx.font = "50px Arial";
+                canvasCtx.fillStyle = "lime";
+                canvasCtx.fillText("✅", 20, 60);
+  
+                if (correctCounter >= 3) {
+                  status.textContent = `Gesture "${gestureType}" completed! ✅`;
+                  camera.stop();
+                  btn.disabled = true;
+                  checkAllCompleted();
                 }
+              } else {
+                canvasCtx.font = "50px Arial";
+                canvasCtx.fillStyle = "red";
+                canvasCtx.fillText("❌", 20, 60);
+              }
             }
-
-            function checkAllCompleted() {
-                let completed = Array.from(document.querySelectorAll('.status'))
-                    .every(status => status.textContent.includes('✅'));
-
-                if (completed) {
-                    completedLessons[lessonKey] = true;
-                    localStorage.setItem('completedLessons', JSON.stringify(completedLessons));
-                    alert('Congratulations! You completed all gestures for this lesson!');
-                }
-            }
+  
+            canvasCtx.restore();
+          });
+  
+          camera = new Camera(videoElement, {
+            onFrame: async () => {
+              if (status.textContent === 'Initializing camera...') {
+                status.textContent = 'Camera ready! Perform your sign!';
+              }
+              await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+          });
+          camera.start();
         });
-    </script>
-
-</body>
-</html>
+      });
+  
+      function isCorrectGesture(landmarks, gestureType) {
+        switch (gestureType) {
+          case 'hello':
+            const wrist = landmarks[0];
+            const indexTip = landmarks[8];
+            const middleTip = landmarks[12];
+            const pinkyTip = landmarks[20];
+            const palmHeight = Math.abs(indexTip.y - wrist.y);
+            const pinkySpread = Math.abs(pinkyTip.x - indexTip.x);
+            return (indexTip.y < wrist.y && palmHeight > 0.2 && pinkySpread > 0.2);
+          case 'goodbye':
+            return landmarks[4].x > landmarks[20].x;
+          case 'thankyou':
+            return landmarks[8].y > landmarks[6].y;
+          default:
+            return false;
+        }
+      }
+  
+      function checkAllCompleted() {
+        let completed = Array.from(document.querySelectorAll('.status'))
+          .every(status => status.textContent.includes('✅'));
+  
+        if (completed) {
+          completedLessons[lessonKey] = true;
+          localStorage.setItem('completedLessons', JSON.stringify(completedLessons));
+          alert('Congratulations! You completed all gestures for this lesson!');
+        }
+      }
+    });
+  </script>
+  
+  </body>
+  </html>
+    
