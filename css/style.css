@@ -15,6 +15,7 @@ body {
     font-family: "Helvetica Neue", sans-serif;
     background-color: var(--background-light);
     color: var(--text-light);
+    overflow-x: hidden;
     transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -29,18 +30,20 @@ body {
 /* Navbar */
 .navbar {
     width: 100%;
-    background: transparent; /* or color if you want */
+    background: rgba(0, 0, 0, 0.4); /* Slight black transparent */
+    backdrop-filter: blur(10px); /* Adds a modern glass blur */
     position: fixed;
     top: 0;
     left: 0;
     z-index: 100;
-    padding: 1rem 0; /* Only top and bottom padding */
+    padding: 1rem 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem; /* Padding inside container */
+    padding: 0 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -79,13 +82,14 @@ body {
 }
 
 .hero-text {
+    flex: 1;
     max-width: 600px;
 }
 
 .hero-text h1 {
     font-size: 3rem;
-    color: var(--yellow-accent);
     margin-bottom: 1rem;
+    color: var(--yellow-accent);
 }
 
 .hero-text p {
@@ -93,7 +97,7 @@ body {
     margin-bottom: 2rem;
 }
 
-.hero-buttons .outline-button {
+.outline-button {
     display: inline-block;
     border: 2px solid var(--yellow-accent);
     padding: 0.75rem 1.5rem;
@@ -101,30 +105,49 @@ body {
     border-radius: 12px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.3s, color 0.3s;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-.hero-buttons .outline-button:hover {
+.outline-button:hover {
     background-color: var(--yellow-accent);
     color: #222;
 }
 
-/* Background Hand Emoji */
+/* Background Side (Hand + Progress Card) */
 .hero-background {
-    flex-shrink: 0;
+    flex: 1;
     position: relative;
-    width: 400px;
-    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hero-hand {
-    font-size: 25rem;
+    font-size: 30rem;
     opacity: 0.05;
     position: absolute;
-    right: 0;
-    top: 20%;
+    right: -5%;
+    top: 10%;
+    pointer-events: none;
     animation: waveHand 3s infinite ease-in-out;
     transform-origin: bottom center;
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 6rem 2rem 2rem;
+    }
+
+    .hero-background {
+        display: none;
+    }
+
+    .hero-text {
+        max-width: 100%;
+    }
 }
 
 @keyframes waveHand {
@@ -132,11 +155,50 @@ body {
     50% { transform: rotate(20deg); }
 }
 
+/* Progress Card */
+.hero-progress {
+    position: absolute;
+    bottom: 10%;
+    right: 5%;
+    background: rgba(255, 255, 255, 0.05); /* even lighter */
+    backdrop-filter: blur(8px);
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    max-width: 300px;
+    text-align: center;
+    color: inherit;
+    border: 2px solid var(--yellow-accent);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    transition: background 0.3s ease;
+}
+
+.hero-progress:hover {
+    background: rgba(255, 217, 61, 0.08);
+}
+
+.hero-progress-button {
+    margin-top: 1.5rem;
+}
+
+.hero-progress-button .outline-button {
+    padding: 0.75rem 1.5rem;
+    margin-top: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    display: inline-block;
+}
+
 /* Fade In Animation */
 .fade-in {
     opacity: 0;
     transform: translateY(40px);
     animation: fadeInRise 1s forwards;
+}
+
+.fade-in-slow {
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeInRise 2s forwards;
 }
 
 @keyframes fadeInRise {
