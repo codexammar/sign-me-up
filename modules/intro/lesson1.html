@@ -125,6 +125,7 @@
                         canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
                         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                            console.log('Hand detected:', results.multiHandLandmarks);
                             const landmarks = results.multiHandLandmarks[0];
 
                             // 🎯 Draw the hand skeleton lines and dots
