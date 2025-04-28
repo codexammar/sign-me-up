@@ -116,18 +116,30 @@
                     hands.onResults((results) => {
                         canvasCtx.save();
                         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
                         // Flip the canvas horizontally
                         canvasCtx.scale(-1, 1);
                         canvasCtx.translate(-canvasElement.width, 0);
 
+                        // Draw the mirrored webcam feed
                         canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
                         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                             const landmarks = results.multiHandLandmarks[0];
 
+                            // 🎯 Draw the hand skeleton lines and dots
+                            drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
+                            drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
+
+                            // 🎯 Perform detection
                             if (isCorrectGesture(landmarks, gestureType)) {
                                 correctCounter++;
                                 status.textContent = `Good job! (${correctCounter}/3)`;
+
+                                // ✅ Draw a big green checkmark if correct
+                                canvasCtx.font = "50px Arial";
+                                canvasCtx.fillStyle = "lime";
+                                canvasCtx.fillText("✅", 20, 60);
 
                                 if (correctCounter >= 3) {
                                     status.textContent = `Gesture "${gestureType}" completed! ✅`;
@@ -136,10 +148,11 @@
                                     checkAllCompleted();
                                 }
                             } else {
-                                status.textContent = 'Gesture not recognized. Try again!';
+                                // ❌ Draw a red X if wrong
+                                canvasCtx.font = "50px Arial";
+                                canvasCtx.fillStyle = "red";
+                                canvasCtx.fillText("❌", 20, 60);
                             }
-
-                            setTimeout(() => { }, 1000);
                         }
 
                         canvasCtx.restore();
@@ -163,19 +176,19 @@
                 // Simple placeholder logic; Replace this with your actual gesture-detection
                 switch (gestureType) {
                     case 'hello':
-                    const wrist = landmarks[0];  // base of palm
-                    const indexTip = landmarks[8]; // tip of index finger
-                    const middleTip = landmarks[12]; // tip of middle finger
-                    const pinkyTip = landmarks[20]; // tip of pinky
+                        const wrist = landmarks[0];  // base of palm
+                        const indexTip = landmarks[8]; // tip of index finger
+                        const middleTip = landmarks[12]; // tip of middle finger
+                        const pinkyTip = landmarks[20]; // tip of pinky
 
-                    const palmHeight = Math.abs(indexTip.y - wrist.y);
-                    const pinkySpread = Math.abs(pinkyTip.x - indexTip.x);
+                        const palmHeight = Math.abs(indexTip.y - wrist.y);
+                        const pinkySpread = Math.abs(pinkyTip.x - indexTip.x);
 
-                    return (
-                        indexTip.y < wrist.y &&   // hand is upright
-                        palmHeight > 0.2 &&       // hand is open enough
-                        pinkySpread > 0.2          // hand is spread out
-                    );
+                        return (
+                            indexTip.y < wrist.y &&   // hand is upright
+                            palmHeight > 0.2 &&       // hand is open enough
+                            pinkySpread > 0.2          // hand is spread out
+                        );
                     case 'goodbye':
                         return landmarks[4].x > landmarks[20].x; // simplistic wave side
                     case 'thankyou':
