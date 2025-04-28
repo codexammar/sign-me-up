@@ -20,20 +20,28 @@ toggleButton.addEventListener('click', () => {
 });
 
 // Hamburger Menu Toggle
-const hamburger = document.getElementById('hamburger');
+const hamburger = document.getElementById('hamburgerBtn');
 const navLinks = document.getElementById('nav-links');
+const body = document.body;
 
+// Hamburger Toggle
 hamburger.addEventListener('click', () => {
-    navLinks.classList.toggle('open');
+    if (body.classList.contains('nav-open')) {
+        navLinks.classList.remove('open');
+        body.classList.remove('nav-open');
+    } else {
+        navLinks.classList.add('open');
+        body.classList.add('nav-open');
+    }
 });
 
-// Close hamburger menu if clicked outside
+// Close hamburger if clicked outside
 document.addEventListener('click', (event) => {
     const isClickInsideNav = navLinks.contains(event.target);
     const isClickOnHamburger = hamburger.contains(event.target);
 
-    if (!isClickInsideNav && !isClickOnHamburger) {
+    if (!isClickInsideNav && !isClickOnHamburger && body.classList.contains('nav-open')) {
         navLinks.classList.remove('open');
+        body.classList.remove('nav-open');
     }
 });
-

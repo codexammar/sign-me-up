@@ -123,19 +123,40 @@ body.dark-mode .nav-links {
 
 /* Hamburger (hidden on desktop) */
 .hamburger {
-    display: none;
+    display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    width: 28px;
+    height: 22px;
+    background: none;
+    border: none;
     cursor: pointer;
-    padding-left: 1rem;
+    z-index: 1001;
 }
 
-.hamburger .bar {
+.bar {
     height: 3px;
-    width: 25px;
-    background-color: var(--yellow-accent);
-    margin: 4px 0;
-    border-radius: 2px;
+    width: 100%;
+    background-color: var(--text-light);
+    border-radius: 4px;
     transition: all 0.3s ease;
+}
+
+html.dark-mode .bar {
+    background-color: var(--text-dark);
+}
+
+/* Animation for open menu (bars turn into X) */
+body.nav-open .bar.top {
+    transform: translateY(9px) rotate(45deg);
+}
+
+body.nav-open .bar.middle {
+    opacity: 0;
+}
+
+body.nav-open .bar.bottom {
+    transform: translateY(-9px) rotate(-45deg);
 }
 
 /* Mobile View */
@@ -150,29 +171,27 @@ body.dark-mode .nav-links {
         display: flex;
     }
 
-    @media (max-width: 768px) {
-        .nav-links {
-            flex-direction: column;
-            align-items: center;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
-        }
-    
-        .nav-links.open {
-            max-height: 500px;
-        }
-    
-        body.dark-mode .nav-links {
-            background-color: rgba(0, 0, 0, 0.85);
-        }
-    }    
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
+    }
+
+    .nav-links.open {
+        max-height: 500px;
+    }
+
+    body.dark-mode .nav-links {
+        background-color: rgba(0, 0, 0, 0.85);
+    }
 
     .nav-links a, .nav-links button {
         margin: 1rem 0;
