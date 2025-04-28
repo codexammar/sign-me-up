@@ -400,6 +400,12 @@ body.nav-open .bar.bottom {
         box-shadow 0.3s ease,
         transform 0.4s ease;
 }
+/* Reset all elements */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 @media (max-width: 768px) {
     .module-section {
@@ -416,8 +422,8 @@ body.nav-open .bar.bottom {
     }
 
     .module-card, .lesson-card {
-        width: calc(100% - 2rem);
-        max-width: none;
+        width: 100%; /* yes, 100% now */
+        max-width: 400px; /* cap the max width */
         margin: 1rem auto;
     }
 }
