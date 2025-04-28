@@ -11,17 +11,25 @@
     <header class="navbar">
         <div class="nav-container">
             <div class="logo">Sign Me Up!</div>
-            <nav class="nav-links">
+            <nav class="nav-links" id="nav-links">
                 <a href="#about">About</a>
                 <a href="#modules">Modules</a>
                 <a href="#contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark mode" class="theme-toggle-button">
+                    🌙
+                </button>
             </nav>
+            <div class="hamburger" id="hamburger">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
         </div>
     </header>
 
     <section class="hero">
         <div class="hero-text fade-in">
-            <h1><em>Sign</em> Me Up!</h1>
+            <h1><span class="highlight">Sign</span> Me Up!</h1>
             <p>Learn simple sign language and help build a more welcoming world.</p>
             <div class="hero-buttons">
                 <a href="#modules" class="outline-button">Get Started</a>

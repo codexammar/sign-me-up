@@ -19,25 +19,28 @@ body {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: var(--background-dark);
-        color: var(--text-dark);
-    }
+body.dark-mode {
+    background-color: var(--background-dark);
+    color: var(--text-dark);
 }
 
-/* Navbar */
+body.dark-mode .navbar {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
 .navbar {
     width: 100%;
-    background: rgba(0, 0, 0, 0.4); /* Slight black transparent */
-    backdrop-filter: blur(10px); /* Adds a modern glass blur */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
     position: fixed;
     top: 0;
     left: 0;
     z-index: 100;
     padding: 1rem 0;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 .nav-container {
@@ -57,6 +60,9 @@ body {
 
 .nav-links {
     display: flex;
+    background-color: rgba(255, 255, 255, 0.6); /* Same as navbar light mode */
+    backdrop-filter: blur(10px);
+    transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
 }
 
 .nav-links a {
@@ -71,7 +77,56 @@ body {
     color: var(--yellow-accent);
 }
 
-/* Hero Section */
+.theme-toggle-button {
+    background: none;
+    border: 2px solid var(--yellow-accent);
+    color: var(--yellow-accent);
+    font-size: 1.2rem; /* Smaller size */
+    padding: 0.3rem 0.6rem; /* Smaller padding */
+    margin-left: 1.5rem; /* Tighter margin */
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+}
+
+.theme-toggle-button:hover {
+    background: var(--yellow-accent);
+    color: #222;
+}
+
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-links {
+        margin-top: 1rem;
+        flex-direction: column;
+        align-items: center;
+        background-color: rgba(255, 255, 255, 0.95); /* Slightly stronger white for dropdown */
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+        max-height: 0;
+        border-bottom: 2px solid var(--yellow-accent);
+        transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
+    }
+
+    .nav-links.open {
+        max-height: 500px;
+    }
+
+    .theme-toggle-button {
+        margin: 1rem 0 0 0;
+        font-size: 1.5rem; /* Keep it bigger for mobile */
+        padding: 0.5rem 1rem;
+    }
+
+    body.dark-mode .nav-links {
+        background-color: rgba(0, 0, 0, 0.85); /* Dark blurry dropdown */
+    }
+}
+
 .hero {
     display: flex;
     align-items: center;
@@ -89,6 +144,10 @@ body {
 .hero-text h1 {
     font-size: 3rem;
     margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.hero-text h1 .highlight {
     color: var(--yellow-accent);
 }
 
@@ -106,7 +165,7 @@ body {
     text-decoration: none;
     color: inherit;
     font-weight: 600;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.4s, color 0.3s;
 }
 
 .outline-button:hover {
@@ -114,7 +173,6 @@ body {
     color: #222;
 }
 
-/* Background Side (Hand + Progress Card) */
 .hero-background {
     flex: 1;
     position: relative;
@@ -124,11 +182,11 @@ body {
 }
 
 .hero-hand {
-    font-size: 30rem;
-    opacity: 0.05;
+    font-size: 28rem;
+    opacity: 0.07;
     position: absolute;
-    right: -5%;
-    top: 10%;
+    right: 10%;
+    top: 5%;
     pointer-events: none;
     animation: waveHand 3s infinite ease-in-out;
     transform-origin: bottom center;
@@ -139,6 +197,7 @@ body {
         flex-direction: column;
         text-align: center;
         padding: 6rem 2rem 2rem;
+        min-height: auto;
     }
 
     .hero-background {
@@ -155,12 +214,11 @@ body {
     50% { transform: rotate(20deg); }
 }
 
-/* Progress Card */
 .hero-progress {
     position: absolute;
     bottom: 10%;
     right: 5%;
-    background: rgba(255, 255, 255, 0.05); /* even lighter */
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(8px);
     padding: 1.5rem 2rem;
     border-radius: 16px;
@@ -188,7 +246,6 @@ body {
     display: inline-block;
 }
 
-/* Fade In Animation */
 .fade-in {
     opacity: 0;
     transform: translateY(40px);
@@ -208,7 +265,6 @@ body {
     }
 }
 
-/* Mission and Timeline Sections */
 .mission-section, .timeline-section {
     padding: 6rem 2rem;
     text-align: center;
@@ -230,10 +286,68 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Footer */
 footer {
     padding: 2rem;
     text-align: center;
     font-size: 0.9rem;
     color: var(--yellow-accent);
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding-left: 1rem;
+}
+
+.hamburger .bar {
+    height: 3px;
+    width: 25px;
+    background-color: var(--yellow-accent);
+    margin: 4px 0;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Mobile View */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.5s ease-in-out;
+        border-bottom: 2px solid var(--yellow-accent);
+    }
+
+    .nav-links.open {
+        max-height: 500px; /* Adjust if needed */
+    }
+
+    .nav-links a, .nav-links button {
+        margin: 1rem 0;
+    }
+}
+
+/* Dark Mode Navbar Open Menu */
+body.dark-mode .nav-links {
+    background-color: rgba(0, 0, 0, 0.8); /* Same as navbar dark mode */
+    backdrop-filter: blur(10px);
 }
