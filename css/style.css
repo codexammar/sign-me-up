@@ -11,20 +11,29 @@ html {
 }
 
 body {
-    margin: 0;
     font-family: "Helvetica Neue", sans-serif;
-    background-color: var(--background-light);
-    color: var(--text-light);
     overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-body.dark-mode {
+/* Light Mode */
+html:not(.dark-mode) body {
+    background-color: var(--background-light);
+    color: var(--text-light);
+}
+
+/* Dark Mode */
+html.dark-mode body {
     background-color: var(--background-dark);
     color: var(--text-dark);
 }
 
-body.dark-mode .navbar {
+html.dark-mode {
+    background-color: var(--background-dark);
+    color: var(--text-dark);
+}
+
+html.dark-mode .navbar {
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
@@ -116,7 +125,7 @@ body.dark-mode .navbar {
 }
 
 /* Dark Mode Nav Links */
-body.dark-mode .nav-links {
+html.dark-mode .nav-links {
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
 }
@@ -189,7 +198,7 @@ body.nav-open .bar.bottom {
         max-height: 500px;
     }
 
-    body.dark-mode .nav-links {
+    html.dark-mode .nav-links {
         background-color: rgba(0, 0, 0, 0.85);
     }
 
@@ -385,11 +394,11 @@ body.nav-open .bar.bottom {
     border-color: var(--yellow-accent);
 }
 
-body.dark-mode .module-card {
+html.dark-mode .module-card {
     background: rgba(18, 18, 18, 0.9);
 }
 
-body.dark-mode .module-card:hover {
+html.dark-mode .module-card:hover {
     background: rgba(30, 30, 30, 0.95);
 }
 
@@ -439,11 +448,11 @@ footer {
     box-shadow: 0 12px 24px rgba(255, 217, 61, 0.3);
 }
 
-body.dark-mode .lesson-card {
+html.dark-mode .lesson-card {
     background: rgba(18, 18, 18, 0.9);
 }
 
-body.dark-mode .lesson-card:hover {
+html.dark-mode .lesson-card:hover {
     background: rgba(30, 30, 30, 0.95);
 }
 
@@ -488,7 +497,7 @@ body.dark-mode .lesson-card:hover {
     overflow: visible; /* Changed from hidden to visible */
 }
 
-body.dark-mode .progress-container {
+html.dark-mode .progress-container {
     background-color: rgba(100, 100, 100, 0.5);
 }
 
@@ -533,4 +542,12 @@ body.dark-mode .progress-container {
 
 .dot.completed {
     background-color: var(--yellow-accent);
+}
+
+@media (max-width: 768px) {
+    .module-card, .lesson-card {
+        width: 90%;
+        max-width: none;
+        margin: 1rem auto;
+    }
 }
