@@ -26,3 +26,14 @@ const navLinks = document.getElementById('nav-links');
 hamburger.addEventListener('click', () => {
     navLinks.classList.toggle('open');
 });
+
+// Close hamburger menu if clicked outside
+document.addEventListener('click', (event) => {
+    const isClickInsideNav = navLinks.contains(event.target);
+    const isClickOnHamburger = hamburger.contains(event.target);
+
+    if (!isClickInsideNav && !isClickOnHamburger) {
+        navLinks.classList.remove('open');
+    }
+});
+

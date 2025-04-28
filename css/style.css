@@ -16,7 +16,7 @@ body {
     background-color: var(--background-light);
     color: var(--text-light);
     overflow-x: hidden;
-    transition: background 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body.dark-mode {
@@ -25,22 +25,23 @@ body.dark-mode {
 }
 
 body.dark-mode .navbar {
-    background: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
+/* Navbar */
 .navbar {
     width: 100%;
-    background: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 100;
+    z-index: 1000;
     padding: 1rem 0;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .nav-container {
@@ -58,11 +59,22 @@ body.dark-mode .navbar {
     color: var(--yellow-accent);
 }
 
+/* Nav Links */
 .nav-links {
     display: flex;
-    background-color: rgba(255, 255, 255, 0.6); /* Same as navbar light mode */
+    background-color: rgba(255, 255, 255, 0.6); /* Desktop background */
     backdrop-filter: blur(10px);
     transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
+    position: static;
+    top: 100%;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    max-height: none;
+}
+
+.nav-links.open {
+    max-height: 500px;
 }
 
 .nav-links a {
@@ -71,62 +83,109 @@ body.dark-mode .navbar {
     font-weight: 500;
     color: inherit;
     transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    height: 2.5rem;
 }
 
 .nav-links a:hover {
     color: var(--yellow-accent);
 }
 
+/* Theme Toggle Button */
 .theme-toggle-button {
     background: none;
     border: 2px solid var(--yellow-accent);
     color: var(--yellow-accent);
-    font-size: 1.2rem; /* Smaller size */
-    padding: 0.3rem 0.6rem; /* Smaller padding */
-    margin-left: 1.5rem; /* Tighter margin */
+    font-size: 1.2rem;
+    padding: 0.4rem 0.8rem;
+    margin-left: 1.5rem;
     border-radius: 12px;
     cursor: pointer;
     transition: background 0.3s, color 0.3s;
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
 }
 
 .theme-toggle-button:hover {
-    background: var(--yellow-accent);
+    background-color: var(--yellow-accent);
     color: #222;
 }
 
+/* Dark Mode Nav Links */
+body.dark-mode .nav-links {
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+/* Hamburger (hidden on desktop) */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    padding-left: 1rem;
+}
+
+.hamburger .bar {
+    height: 3px;
+    width: 25px;
+    background-color: var(--yellow-accent);
+    margin: 4px 0;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Mobile View */
 @media (max-width: 768px) {
     .nav-container {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
+        justify-content: space-between;
     }
 
-    .nav-links {
-        margin-top: 1rem;
-        flex-direction: column;
-        align-items: center;
-        background-color: rgba(255, 255, 255, 0.95); /* Slightly stronger white for dropdown */
-        backdrop-filter: blur(10px);
-        overflow: hidden;
-        max-height: 0;
-        border-bottom: 2px solid var(--yellow-accent);
-        transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
+    .hamburger {
+        display: flex;
     }
 
-    .nav-links.open {
-        max-height: 500px;
+    @media (max-width: 768px) {
+        .nav-links {
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: background-color 0.4s ease, max-height 0.5s ease-in-out;
+        }
+    
+        .nav-links.open {
+            max-height: 500px;
+        }
+    
+        body.dark-mode .nav-links {
+            background-color: rgba(0, 0, 0, 0.85);
+        }
+    }    
+
+    .nav-links a, .nav-links button {
+        margin: 1rem 0;
     }
 
     .theme-toggle-button {
         margin: 1rem 0 0 0;
-        font-size: 1.5rem; /* Keep it bigger for mobile */
+        font-size: 1.5rem;
         padding: 0.5rem 1rem;
-    }
-
-    body.dark-mode .nav-links {
-        background-color: rgba(0, 0, 0, 0.85); /* Dark blurry dropdown */
     }
 }
 
+/* Hero Section */
 .hero {
     display: flex;
     align-items: center;
@@ -165,7 +224,7 @@ body.dark-mode .navbar {
     text-decoration: none;
     color: inherit;
     font-weight: 600;
-    transition: background-color 0.4s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .outline-button:hover {
@@ -173,12 +232,19 @@ body.dark-mode .navbar {
     color: #222;
 }
 
+/* Hero Background */
 .hero-background {
     flex: 1;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+@media (max-width: 768px) {
+    .hero-background {
+        display: none;
+    }
 }
 
 .hero-hand {
@@ -192,6 +258,7 @@ body.dark-mode .navbar {
     transform-origin: bottom center;
 }
 
+/* Mobile Adjustments */
 @media (max-width: 768px) {
     .hero {
         flex-direction: column;
@@ -209,41 +276,10 @@ body.dark-mode .navbar {
     }
 }
 
+/* Animations */
 @keyframes waveHand {
     0%, 100% { transform: rotate(0deg); }
     50% { transform: rotate(20deg); }
-}
-
-.hero-progress {
-    position: absolute;
-    bottom: 10%;
-    right: 5%;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
-    padding: 1.5rem 2rem;
-    border-radius: 16px;
-    max-width: 300px;
-    text-align: center;
-    color: inherit;
-    border: 2px solid var(--yellow-accent);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    transition: background 0.3s ease;
-}
-
-.hero-progress:hover {
-    background: rgba(255, 217, 61, 0.08);
-}
-
-.hero-progress-button {
-    margin-top: 1.5rem;
-}
-
-.hero-progress-button .outline-button {
-    padding: 0.75rem 1.5rem;
-    margin-top: 1rem;
-    border-radius: 12px;
-    font-size: 1rem;
-    display: inline-block;
 }
 
 .fade-in {
@@ -265,11 +301,13 @@ body.dark-mode .navbar {
     }
 }
 
+/* Mission Section */
 .mission-section, .timeline-section {
     padding: 6rem 2rem;
     text-align: center;
 }
 
+/* Timeline Section */
 .timeline {
     display: flex;
     flex-direction: column;
@@ -286,68 +324,10 @@ body.dark-mode .navbar {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+/* Footer */
 footer {
     padding: 2rem;
     text-align: center;
     font-size: 0.9rem;
     color: var(--yellow-accent);
-}
-
-.hamburger {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
-    padding-left: 1rem;
-}
-
-.hamburger .bar {
-    height: 3px;
-    width: 25px;
-    background-color: var(--yellow-accent);
-    margin: 4px 0;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-}
-
-/* Mobile View */
-@media (max-width: 768px) {
-    .nav-container {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .hamburger {
-        display: flex;
-    }
-
-    .nav-links {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow: hidden;
-        max-height: 0;
-        transition: max-height 0.5s ease-in-out;
-        border-bottom: 2px solid var(--yellow-accent);
-    }
-
-    .nav-links.open {
-        max-height: 500px; /* Adjust if needed */
-    }
-
-    .nav-links a, .nav-links button {
-        margin: 1rem 0;
-    }
-}
-
-/* Dark Mode Navbar Open Menu */
-body.dark-mode .nav-links {
-    background-color: rgba(0, 0, 0, 0.8); /* Same as navbar dark mode */
-    backdrop-filter: blur(10px);
 }
