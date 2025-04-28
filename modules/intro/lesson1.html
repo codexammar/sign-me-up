@@ -147,6 +147,9 @@
 
                     camera = new Camera(videoElement, {
                         onFrame: async () => {
+                            if (status.textContent === 'Initializing camera...') {
+                                status.textContent = 'Camera ready! Perform your sign!';
+                            }
                             await hands.send({ image: videoElement });
                         },
                         width: 640,
@@ -160,7 +163,7 @@
                 // Simple placeholder logic; Replace this with your actual gesture-detection
                 switch (gestureType) {
                     case 'hello':
-                        return landmarks[8].y < landmarks[6].y; // simplistic wave detection
+                        return landmarks[8].y < landmarks[5].y; // Index tip higher than base knuckle
                     case 'goodbye':
                         return landmarks[4].x > landmarks[20].x; // simplistic wave side
                     case 'thankyou':
