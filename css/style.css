@@ -1,0 +1,177 @@
+:root {
+    --yellow-accent: #FFD93D;
+    --background-light: #ffffff;
+    --background-dark: #121212;
+    --text-light: #000000;
+    --text-dark: #f0f0f0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Helvetica Neue", sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-light);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--background-dark);
+        color: var(--text-dark);
+    }
+}
+
+/* Navbar */
+.navbar {
+    width: 100%;
+    background: transparent; /* or color if you want */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    padding: 1rem 0; /* Only top and bottom padding */
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem; /* Padding inside container */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--yellow-accent);
+}
+
+.nav-links {
+    display: flex;
+}
+
+.nav-links a {
+    margin-left: 2rem;
+    text-decoration: none;
+    font-weight: 500;
+    color: inherit;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--yellow-accent);
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8rem 4rem 4rem;
+    min-height: 100vh;
+    position: relative;
+}
+
+.hero-text {
+    max-width: 600px;
+}
+
+.hero-text h1 {
+    font-size: 3rem;
+    color: var(--yellow-accent);
+    margin-bottom: 1rem;
+}
+
+.hero-text p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.hero-buttons .outline-button {
+    display: inline-block;
+    border: 2px solid var(--yellow-accent);
+    padding: 0.75rem 1.5rem;
+    margin-right: 1rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.3s, color 0.3s;
+}
+
+.hero-buttons .outline-button:hover {
+    background-color: var(--yellow-accent);
+    color: #222;
+}
+
+/* Background Hand Emoji */
+.hero-background {
+    flex-shrink: 0;
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.hero-hand {
+    font-size: 25rem;
+    opacity: 0.05;
+    position: absolute;
+    right: 0;
+    top: 20%;
+    animation: waveHand 3s infinite ease-in-out;
+    transform-origin: bottom center;
+}
+
+@keyframes waveHand {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(20deg); }
+}
+
+/* Fade In Animation */
+.fade-in {
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeInRise 1s forwards;
+}
+
+@keyframes fadeInRise {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mission and Timeline Sections */
+.mission-section, .timeline-section {
+    padding: 6rem 2rem;
+    text-align: center;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.timeline-item {
+    background: var(--yellow-accent);
+    color: #222;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Footer */
+footer {
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--yellow-accent);
+}
