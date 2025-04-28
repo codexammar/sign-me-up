@@ -163,7 +163,19 @@
                 // Simple placeholder logic; Replace this with your actual gesture-detection
                 switch (gestureType) {
                     case 'hello':
-                        return landmarks[8].y < landmarks[5].y; // Index tip higher than base knuckle
+                    const wrist = landmarks[0];  // base of palm
+                    const indexTip = landmarks[8]; // tip of index finger
+                    const middleTip = landmarks[12]; // tip of middle finger
+                    const pinkyTip = landmarks[20]; // tip of pinky
+
+                    const palmHeight = Math.abs(indexTip.y - wrist.y);
+                    const pinkySpread = Math.abs(pinkyTip.x - indexTip.x);
+
+                    return (
+                        indexTip.y < wrist.y &&   // hand is upright
+                        palmHeight > 0.2 &&       // hand is open enough
+                        pinkySpread > 0.2          // hand is spread out
+                    );
                     case 'goodbye':
                         return landmarks[4].x > landmarks[20].x; // simplistic wave side
                     case 'thankyou':
