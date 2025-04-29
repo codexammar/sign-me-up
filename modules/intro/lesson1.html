@@ -48,8 +48,10 @@
       <p>Raise your hand and wave gently to say "Hello."</p>
       <button class="outline-button start-btn">Start Camera</button>
       <p class="status">Waiting for action...</p>
-      <video class="input_video" width="640" height="480" autoplay playsinline></video>
-      <canvas class="output_canvas" width="640" height="480"></canvas>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>      
     </div>
   
     <div class="lesson-section" data-gesture="goodbye">
@@ -126,6 +128,9 @@
           });
   
           hands.onResults((results) => {
+            // Resize canvas to match actual display size
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
