@@ -126,12 +126,14 @@
           btn.disabled = true;
           status.textContent = 'Initializing camera...';
 
-          hands.setOptions({
-            modelComplexity: 1,
-            maxNumHands: 1,
-            minDetectionConfidence: 0.7,
-            minTrackingConfidence: 0.7
-          });
+          // Inside hands options:
+            hands.setOptions({
+                modelComplexity: 1,
+                maxNumHands: 2, // ✅ allow two hands
+                minDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.7
+            });
+
 
           hands.onResults((results) => {
             canvasElement.width = canvasElement.clientWidth;
@@ -144,12 +146,15 @@
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-              const landmarks = results.multiHandLandmarks[0];
+                const landmarks = results.multiHandLandmarks;
+                const handedness = results.multiHandedness;
 
-              drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
-              drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
+                for (let i = 0; i < landmarks.length; i++) {
+                    drawConnectors(canvasCtx, landmarks[i], HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
+                    drawLandmarks(canvasCtx, landmarks[i], { color: '#FF0000', lineWidth: 2 });
+                }
 
-              if (isCorrectGesture(landmarks, gestureType)) {
+              if (isCorrectGesture(landmarks, gestureType, handedness)) {
                 const now = Date.now();
 
                 if (!lastCorrect && (now - lastSuccessTime > bufferDelay)) {
@@ -199,14 +204,14 @@
         });
       });
 
-      function isCorrectGesture(landmarks, gestureType) {
+      function isCorrectGesture(landmarks, gestureType, handedness) {
         switch (gestureType) {
           case 'please':
-            return isPleaseGesture(landmarks);
+            return isPleaseGesture(landmarks[0]);
           case 'sorry':
-            return isSorryGesture(landmarks);
+            return isSorryGesture(landmarks[0]);
           case 'excuseme':
-            return isExcuseMeGesture(landmarks);
+            return isExcuseMeGesture(landmarks, handedness); // Two hands
           default:
             return false;
         }
@@ -246,19 +251,40 @@
 
       // Excuse Me = palm slide + slight downward motion
       let excuseMePrevY = null;
-      function isExcuseMeGesture(landmarks) {
-        const indexTip = landmarks[8];
-        const palmBase = landmarks[0];
+      let excuseMePrevX = null;
+      function isExcuseMeGesture(multiHandLandmarks, multiHandedness) {
+        if (multiHandLandmarks.length < 2) return false;
 
-        const palmNear = Math.abs(indexTip.y - palmBase.y) < 0.15;
+        let leftHand = null;
+        let rightHand = null;
 
-        let movingDown = false;
-        if (excuseMePrevY !== null) {
-          movingDown = excuseMePrevY - indexTip.y > 0.02;
+        for (let i = 0; i < multiHandLandmarks.length; i++) {
+            const label = multiHandedness[i].label;
+            if (label === "Left") {
+            leftHand = multiHandLandmarks[i];
+            } else if (label === "Right") {
+            rightHand = multiHandLandmarks[i];
+            }
         }
-        excuseMePrevY = indexTip.y;
 
-        return palmNear && movingDown;
+        // If not both hands detected properly
+        if (!leftHand || !rightHand) return false;
+
+        // We'll assume Right hand slides over Left
+        const rightIndex = rightHand[8]; // index finger tip
+        const leftPalm = leftHand[0];    // left wrist as reference for palm center
+
+        const verticalClose = Math.abs(rightIndex.y - leftPalm.y) < 0.15;
+        const horizontalClose = Math.abs(rightIndex.x - leftPalm.x) < 0.15;
+
+        // Some movement forward
+        let movingForward = false;
+        if (excuseMePrevX !== null) {
+            movingForward = excuseMePrevX - rightIndex.x > 0.015;
+        }
+        excuseMePrevX = rightIndex.x;
+
+        return verticalClose && horizontalClose && movingForward;
       }
 
       function checkAllCompleted() {
