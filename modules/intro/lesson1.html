@@ -79,6 +79,9 @@
   <script type="module">
   
     document.addEventListener('DOMContentLoaded', async () => {
+        let lastCorrect = false;
+        let lastSuccessTime = 0;
+        const bufferDelay = 1000; // 1 second delay between detections
       const completedLessons = JSON.parse(localStorage.getItem('completedLessons')) || {};
       const lessonKey = 'intro_greetings';
       const sections = document.querySelectorAll('.lesson-section');
@@ -87,8 +90,14 @@
       let correctCounter = 0;
   
       const hands = new Hands({
-        locateFile: (file) => `/sign-me-up/assets/mediapipe/hands/${file}`
-      });
+        locateFile: (file) => {
+            if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
+            return `/assets/mediapipe/hands/${file}`; // Localhost
+            } else {
+            return `/sign-me-up/assets/mediapipe/hands/${file}`; // GitHub Pages
+            }
+        }
+        });
   
       sections.forEach(section => {
         const btn = section.querySelector('.start-btn');
@@ -119,38 +128,57 @@
           hands.onResults((results) => {
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            // 🪞 Mirror the canvas: affects image + landmarks
             canvasCtx.scale(-1, 1);
             canvasCtx.translate(-canvasElement.width, 0);
-  
+
+            // 🖼️ Draw the mirrored webcam image
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-  
+
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-              const landmarks = results.multiHandLandmarks[0];
-              drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
-              drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
-  
-              if (isCorrectGesture(landmarks, gestureType)) {
-                correctCounter++;
-                status.textContent = `Good job! (${correctCounter}/3)`;
+                const landmarks = results.multiHandLandmarks[0];
+
+                // ✋ Draw mirrored landmarks (matches hand position)
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
+                drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 2 });
+
+                if (isCorrectGesture(landmarks, gestureType)) {
+                const now = Date.now();
+
+                if (!lastCorrect && (now - lastSuccessTime > bufferDelay)) {
+                    correctCounter++;
+                    lastSuccessTime = now;
+                }
+
+                lastCorrect = true;
+
+                // ❌ STOP: Flip back to normal coordinates **before** drawing ✅
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                 canvasCtx.font = "50px Arial";
                 canvasCtx.fillStyle = "lime";
                 canvasCtx.fillText("✅", 20, 60);
-  
+
+                status.textContent = `Good job! (${correctCounter}/3)`;
                 if (correctCounter >= 3) {
-                  status.textContent = `Gesture "${gestureType}" completed! ✅`;
-                  camera.stop();
-                  btn.disabled = true;
-                  checkAllCompleted();
+                    status.textContent = `Gesture "${gestureType}" completed! ✅`;
+                    camera.stop();
+                    btn.disabled = true;
+                    checkAllCompleted();
                 }
-              } else {
+
+                } else {
+                lastCorrect = false;
+
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
                 canvasCtx.font = "50px Arial";
                 canvasCtx.fillStyle = "red";
                 canvasCtx.fillText("❌", 20, 60);
-              }
+                }
             }
-  
+
             canvasCtx.restore();
-          });
+            });
   
           camera = new Camera(videoElement, {
             onFrame: async () => {
@@ -168,22 +196,41 @@
   
       function isCorrectGesture(landmarks, gestureType) {
         switch (gestureType) {
-          case 'hello':
+            case 'hello': {
             const wrist = landmarks[0];
             const indexTip = landmarks[8];
-            const middleTip = landmarks[12];
             const pinkyTip = landmarks[20];
             const palmHeight = Math.abs(indexTip.y - wrist.y);
             const pinkySpread = Math.abs(pinkyTip.x - indexTip.x);
-            return (indexTip.y < wrist.y && palmHeight > 0.2 && pinkySpread > 0.2);
-          case 'goodbye':
-            return landmarks[4].x > landmarks[20].x;
-          case 'thankyou':
-            return landmarks[8].y > landmarks[6].y;
-          default:
+            return (indexTip.y < wrist.y && palmHeight > 0.15 && pinkySpread > 0.15);
+            }
+
+            case 'goodbye': {
+            const wrist = landmarks[0];
+            const pinkyTip = landmarks[20];
+            const thumbTip = landmarks[4];
+
+            // Relaxed goodbye: Check that thumb is farther right (or left) compared to pinky
+            // Signifies a slight wave sideways, instead of hand still
+            return Math.abs(thumbTip.x - pinkyTip.x) > 0.2;
+            }
+
+            case 'thankyou': {
+            const indexTip = landmarks[8];
+            const thumbTip = landmarks[4];
+            const wrist = landmarks[0];
+
+            // Relaxed thank you: Index tip above wrist and thumb not too far (suggests hand is touching mouth area)
+            const nearMouth = indexTip.y < wrist.y + 0.1;
+            const slightExtension = Math.abs(indexTip.x - wrist.x) > 0.15;
+
+            return nearMouth && slightExtension;
+            }
+
+            default:
             return false;
         }
-      }
+        }
   
       function checkAllCompleted() {
         let completed = Array.from(document.querySelectorAll('.status'))
@@ -197,7 +244,7 @@
       }
     });
   </script>
-  
+  <script src="../../js/app.js"></script>
   </body>
   </html>
     

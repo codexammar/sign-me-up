@@ -630,3 +630,17 @@ html.dark-mode .lesson-card:hover {
     font-size: 1rem;
     line-height: 1.4;
 }
+
+.input_video {
+    transform: scaleX(-1); /* Flip horizontally like a mirror */
+}
+
+/* Mobile-specific adjustment */
+@media (max-width: 768px) {
+    .input_video,
+    .output_canvas {
+      width: 90vw; /* 90% of viewport width */
+      height: auto;
+      max-width: 90vw;
+    }
+}
