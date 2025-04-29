@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Common Dialogue - Basic Conversations</title>
+  <style>
+    html.dark-mode {
+      background-color: #121212;
+      color: #f5f5f5;
+    }
+  </style>
+  <script>
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add("dark-mode");
+    }
+  </script>
+  <link rel="stylesheet" href="../../css/style.css" />
+
+  <!-- MediaPipe Hands -->
+  <script src="../../assets/mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">Sign Me Up!</div>
+      <nav class="nav-links">
+        <a href="../../index.html#about">About</a>
+        <a href="../../index.html#modules">Modules</a>
+        <a href="../../index.html#contact">Contact</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" class="theme-toggle-button">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="module-page fade-in">
+    <h1><span class="highlight">Common Dialogue</span></h1>
+    <p>Practice simple back-and-forth conversations. Perform each dialogue sign correctly <strong>3 times</strong> to continue.</p>
+
+    <div class="lesson-section" data-gesture="hownice">
+      <h2>"How are you?" ➔ "I'm good"</h2>
+      <p>First make the "How are you?" motion (roll hands forward), then give a thumbs-up motion for "I'm good."</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="lesson-section" data-gesture="nameexchange">
+      <h2>"What's your name?" ➔ "My name is..."</h2>
+      <p>Tap index fingers together (What's your name?), then make the tapping fingers "My name is" motion immediately after.</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="lesson-section" data-gesture="nice2meet">
+      <h2>"Nice to meet you"</h2>
+      <p>Slide both index fingers toward each other (same as response version).</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>
+    </div>
+
+    <a href="../conversations.html" class="outline-button">Back to Basic Conversations</a>
+  </section>
+
+  <footer>
+    <p>Created with care by CodexAmmar 💛</p>
+  </footer>
+
+  <script type="module">
+    let howPrevX = null;
+    let thumbPrevY = null;
+    let namePrevDist = null;
+    let meetPrevDist = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      let lastCorrect = false;
+      let lastSuccessTime = 0;
+      const bufferDelay = 1000;
+      const completedLessons = JSON.parse(localStorage.getItem('completedLessons')) || {};
+      const lessonKey = 'basic_dialogue';
+      const sections = document.querySelectorAll('.lesson-section');
+
+      let currentSection = null;
+      let correctCounter = 0;
+
+      const hands = new Hands({
+        locateFile: (file) => {
+          return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            ? `/assets/mediapipe/hands/${file}`
+            : `/sign-me-up/assets/mediapipe/hands/${file}`;
+        }
+      });
+
+      sections.forEach(section => {
+        const btn = section.querySelector('.start-btn');
+        const status = section.querySelector('.status');
+        const videoElement = section.querySelector('.input_video');
+        const canvasElement = section.querySelector('.output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const gestureType = section.getAttribute('data-gesture');
+
+        let camera;
+
+        btn.addEventListener('click', () => {
+          if (currentSection !== section) {
+            correctCounter = 0;
+            currentSection = section;
+          }
+
+          btn.disabled = true;
+          status.textContent = 'Initializing camera...';
+
+          hands.setOptions({
+            modelComplexity: 1,
+            maxNumHands: 2,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+          });
+
+          hands.onResults((results) => {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            canvasCtx.scale(-1, 1);
+            canvasCtx.translate(-canvasElement.width, 0);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+              const landmarks = results.multiHandLandmarks;
+              const handedness = results.multiHandedness;
+
+              for (let i = 0; i < landmarks.length; i++) {
+                drawConnectors(canvasCtx, landmarks[i], HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
+                drawLandmarks(canvasCtx, landmarks[i], { color: '#FF0000', lineWidth: 2 });
+              }
+
+              if (isCorrectGesture(landmarks, gestureType, handedness)) {
+                const now = Date.now();
+
+                if (!lastCorrect && (now - lastSuccessTime > bufferDelay)) {
+                  correctCounter++;
+                  lastSuccessTime = now;
+                }
+
+                lastCorrect = true;
+
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                canvasCtx.font = "50px Arial";
+                canvasCtx.fillStyle = "lime";
+                canvasCtx.fillText("✅", 20, 60);
+
+                status.textContent = `Good job! (${correctCounter}/3)`;
+                if (correctCounter >= 3) {
+                  status.textContent = `Gesture "${gestureType}" completed! ✅`;
+                  camera.stop();
+                  btn.disabled = true;
+                  checkAllCompleted();
+                }
+
+              } else {
+                lastCorrect = false;
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                canvasCtx.font = "50px Arial";
+                canvasCtx.fillStyle = "red";
+                canvasCtx.fillText("❌", 20, 60);
+              }
+            }
+
+            canvasCtx.restore();
+          });
+
+          camera = new Camera(videoElement, {
+            onFrame: async () => {
+              if (status.textContent === 'Initializing camera...') {
+                status.textContent = 'Camera ready! Perform your sign!';
+              }
+              await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+          });
+          camera.start();
+        });
+      });
+
+      function isCorrectGesture(landmarks, gestureType, handedness) {
+        switch (gestureType) {
+          case 'hownice':
+            return detectHowAndGood(landmarks);
+          case 'nameexchange':
+            return detectNameExchange(landmarks, handedness);
+          case 'nice2meet':
+            return detectNiceMeet(landmarks, handedness);
+          default:
+            return false;
+        }
+      }
+
+      function detectHowAndGood(landmarks) {
+        if (landmarks.length < 1) return false;
+        const hand = landmarks[0];
+        const index = hand[8];
+        const wrist = hand[0];
+        const thumb = hand[4];
+
+        const howMotion = howPrevX !== null && index.x - howPrevX > 0.015;
+        howPrevX = index.x;
+
+        const thumbUp = thumb.y < wrist.y && Math.abs(thumb.x - wrist.x) < 0.2;
+
+        return howMotion && thumbUp;
+      }
+
+      function detectNameExchange(landmarks, handedness) {
+        if (landmarks.length < 2) return false;
+
+        const left = handedness[0].label === "Left" ? landmarks[0] : landmarks[1];
+        const right = handedness[0].label === "Left" ? landmarks[1] : landmarks[0];
+
+        const lIndex = left[8];
+        const rIndex = right[8];
+        const lMiddle = left[12];
+        const rMiddle = right[12];
+
+        const indexDist = Math.hypot(lIndex.x - rIndex.x, lIndex.y - rIndex.y);
+        const middleDist = Math.hypot(lMiddle.x - rMiddle.x, lMiddle.y - rMiddle.y);
+        const avgDist = (indexDist + middleDist) / 2;
+
+        let tapping = false;
+        if (namePrevDist !== null) {
+          tapping = namePrevDist - avgDist > 0.015;
+        }
+        namePrevDist = avgDist;
+
+        return avgDist < 0.15 && tapping;
+      }
+
+      function detectNiceMeet(landmarks, handedness) {
+        if (landmarks.length < 2) return false;
+
+        const left = handedness[0].label === "Left" ? landmarks[0] : landmarks[1];
+        const right = handedness[0].label === "Left" ? landmarks[1] : landmarks[0];
+
+        const lIndex = left[8];
+        const rIndex = right[8];
+        const distance = Math.hypot(lIndex.x - rIndex.x, lIndex.y - rIndex.y);
+
+        let closing = false;
+        if (meetPrevDist !== null) {
+          closing = meetPrevDist - distance > 0.015;
+        }
+        meetPrevDist = distance;
+
+        return distance < 0.15 && closing;
+      }
+
+      function checkAllCompleted() {
+        let completed = Array.from(document.querySelectorAll('.status'))
+          .every(status => status.textContent.includes('✅'));
+
+        if (completed) {
+          completedLessons[lessonKey] = true;
+          localStorage.setItem('completedLessons', JSON.stringify(completedLessons));
+          alert('Congratulations! You completed all dialogue practice!');
+        }
+      }
+    });
+  </script>
+
+  <script src="../../js/app.js"></script>
+</body>
+</html>

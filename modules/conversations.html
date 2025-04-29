@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Conversations - Sign Me Up!</title>
+  <style>
+    html.dark-mode {
+      background-color: #121212;
+      color: #f5f5f5;
+    }
+  </style>
+
+  <script>
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add("dark-mode");
+    }
+  </script>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">Sign Me Up!</div>
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#about">About</a>
+        <a href="index.html#modules">Modules</a>
+        <a href="index.html#contact">Contact</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" class="theme-toggle-button">🌙</button>
+      </nav>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+        <span class="bar top"></span>
+        <span class="bar middle"></span>
+        <span class="bar bottom"></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="module-page fade-in">
+    <h1><span class="highlight">Basic</span> Conversations</h1>
+    <p>Start building real dialogue skills with essential conversational signs.</p>
+    <a href="../index.html#modules" class="outline-button">Back to Modules</a>
+  </section>
+
+  <div class="hero-hand">💬</div>
+
+  <div class="progress-container">
+    <div class="progress-bar"></div>
+    <div class="progress-dots">
+        <div class="dot big completed" title="Start"></div>
+        <div class="dot small" data-lesson="basic_questions" title="Questions"></div>
+        <div class="dot small" data-lesson="basic_responses" title="Responses"></div>
+        <div class="dot small" data-lesson="basic_dialogue" title="Common Dialogue"></div>
+        <div class="dot big" title="Completed"></div>
+    </div>      
+  </div>
+
+  <section class="module-lessons fade-in">
+    <h2>Lessons</h2>
+    <div class="lesson-grid">
+        <a href="basic/questions.html" class="lesson-card" data-lesson="basic_questions">
+          <h3>Questions</h3>
+          <p>Practice how to ask "What’s your name?", "How are you?", and more.</p>
+        </a>
+        <a href="basic/responses.html" class="lesson-card" data-lesson="basic_responses">
+          <h3>Responses</h3>
+          <p>Learn to answer questions like "My name is...", "I’m good", and "Nice to meet you."</p>
+        </a>
+        <a href="basic/dialogue.html" class="lesson-card" data-lesson="basic_dialogue">
+          <h3>Common Dialogue</h3>
+          <p>Put it all together to start signing basic conversations with confidence.</p>
+        </a>
+    </div>      
+  </section>
+
+  <footer>
+    <p>Created with care by CodexAmmar 💛</p>
+  </footer>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

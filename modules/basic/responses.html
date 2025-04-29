@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responses - Basic Conversations</title>
+  <style>
+    html.dark-mode {
+      background-color: #121212;
+      color: #f5f5f5;
+    }
+  </style>
+  <script>
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add("dark-mode");
+    }
+  </script>
+  <link rel="stylesheet" href="../../css/style.css" />
+
+  <!-- MediaPipe Hands -->
+  <script src="../../assets/mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">Sign Me Up!</div>
+      <nav class="nav-links">
+        <a href="../../index.html#about">About</a>
+        <a href="../../index.html#modules">Modules</a>
+        <a href="../../index.html#contact">Contact</a>
+        <button id="theme-toggle" aria-label="Toggle dark mode" class="theme-toggle-button">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="module-page fade-in">
+    <h1><span class="highlight">Responses</span></h1>
+    <p>Practice each response sign below. Perform each sign correctly <strong>3 times</strong> to continue.</p>
+
+    <div class="lesson-section" data-gesture="mynameis">
+      <h2>"My name is..."</h2>
+      <p>Cross your index and middle fingers from each hand and tap them together twice to say "My name is."</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="lesson-section" data-gesture="imgood">
+      <h2>"I'm good"</h2>
+      <p>Give a thumbs-up near your chest and move slightly upward or forward.</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="lesson-section" data-gesture="nicetomeetyou">
+      <h2>"Nice to meet you"</h2>
+      <p>Slide both index fingers toward each other in front of you.</p>
+      <button class="outline-button start-btn">Start Camera</button>
+      <p class="status">Waiting for action...</p>
+      <div class="camera-container">
+        <video class="input_video" autoplay playsinline></video>
+        <canvas class="output_canvas"></canvas>
+      </div>
+    </div>
+
+    <a href="../conversations.html" class="outline-button">Back to Basic Conversations</a>
+  </section>
+
+  <footer>
+    <p>Created with care by CodexAmmar 💛</p>
+  </footer>
+
+  <script type="module">
+    let namePrevY = null;
+    let thumbPrevY = null;
+    let meetPrevDist = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      let lastCorrect = false;
+      let lastSuccessTime = 0;
+      const bufferDelay = 1000;
+      const completedLessons = JSON.parse(localStorage.getItem('completedLessons')) || {};
+      const lessonKey = 'basic_responses';
+      const sections = document.querySelectorAll('.lesson-section');
+
+      let currentSection = null;
+      let correctCounter = 0;
+
+      const hands = new Hands({
+        locateFile: (file) => {
+          return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            ? `/assets/mediapipe/hands/${file}`
+            : `/sign-me-up/assets/mediapipe/hands/${file}`;
+        }
+      });
+
+      sections.forEach(section => {
+        const btn = section.querySelector('.start-btn');
+        const status = section.querySelector('.status');
+        const videoElement = section.querySelector('.input_video');
+        const canvasElement = section.querySelector('.output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const gestureType = section.getAttribute('data-gesture');
+
+        let camera;
+
+        btn.addEventListener('click', () => {
+          if (currentSection !== section) {
+            correctCounter = 0;
+            currentSection = section;
+          }
+
+          btn.disabled = true;
+          status.textContent = 'Initializing camera...';
+
+          hands.setOptions({
+            modelComplexity: 1,
+            maxNumHands: 2,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+          });
+
+          hands.onResults((results) => {
+            canvasElement.width = canvasElement.clientWidth;
+            canvasElement.height = canvasElement.clientHeight;
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            canvasCtx.scale(-1, 1);
+            canvasCtx.translate(-canvasElement.width, 0);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+              const landmarks = results.multiHandLandmarks;
+              const handedness = results.multiHandedness;
+
+              for (let i = 0; i < landmarks.length; i++) {
+                drawConnectors(canvasCtx, landmarks[i], HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
+                drawLandmarks(canvasCtx, landmarks[i], { color: '#FF0000', lineWidth: 2 });
+              }
+
+              if (isCorrectGesture(landmarks, gestureType, handedness)) {
+                const now = Date.now();
+
+                if (!lastCorrect && (now - lastSuccessTime > bufferDelay)) {
+                  correctCounter++;
+                  lastSuccessTime = now;
+                }
+
+                lastCorrect = true;
+
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                canvasCtx.font = "50px Arial";
+                canvasCtx.fillStyle = "lime";
+                canvasCtx.fillText("✅", 20, 60);
+
+                status.textContent = `Good job! (${correctCounter}/3)`;
+                if (correctCounter >= 3) {
+                  status.textContent = `Gesture "${gestureType}" completed! ✅`;
+                  camera.stop();
+                  btn.disabled = true;
+                  checkAllCompleted();
+                }
+
+              } else {
+                lastCorrect = false;
+                canvasCtx.setTransform(1, 0, 0, 1, 0, 0);
+                canvasCtx.font = "50px Arial";
+                canvasCtx.fillStyle = "red";
+                canvasCtx.fillText("❌", 20, 60);
+              }
+            }
+
+            canvasCtx.restore();
+          });
+
+          camera = new Camera(videoElement, {
+            onFrame: async () => {
+              if (status.textContent === 'Initializing camera...') {
+                status.textContent = 'Camera ready! Perform your sign!';
+              }
+              await hands.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+          });
+          camera.start();
+        });
+      });
+
+      function isCorrectGesture(landmarks, gestureType, handedness) {
+        switch (gestureType) {
+          case 'mynameis':
+            return detectMyName(landmarks, handedness);
+          case 'imgood':
+            return detectImGood(landmarks[0]);
+          case 'nicetomeetyou':
+            return detectNiceToMeetYou(landmarks, handedness);
+          default:
+            return false;
+        }
+      }
+
+        let myNamePrevDist = null;
+        let myNameTapCooldown = 0;
+        let myNameTapCount = 0;
+
+        function detectMyName(landmarks, handedness) {
+        if (landmarks.length < 2) return false;
+
+        let leftHand, rightHand;
+
+        if (handedness[0].label === "Left") {
+            leftHand = landmarks[0];
+            rightHand = landmarks[1];
+        } else {
+            leftHand = landmarks[1];
+            rightHand = landmarks[0];
+        }
+
+        const leftIndex = leftHand[8];
+        const leftMiddle = leftHand[12];
+        const rightIndex = rightHand[8];
+        const rightMiddle = rightHand[12];
+
+        const indexDist = Math.hypot(leftIndex.x - rightIndex.x, leftIndex.y - rightIndex.y);
+        const middleDist = Math.hypot(leftMiddle.x - rightMiddle.x, leftMiddle.y - rightMiddle.y);
+        const avgDist = (indexDist + middleDist) / 2;
+
+        // Tap detection
+        if (myNamePrevDist !== null && myNameTapCooldown === 0) {
+            const movement = myNamePrevDist - avgDist;
+            if (movement > 0.015) {  // ❗ slightly lower threshold → more forgiving
+            myNameTapCount++;
+            myNameTapCooldown = 10; // prevent counting too fast
+            }
+        }
+
+        myNamePrevDist = avgDist;
+        if (myNameTapCooldown > 0) myNameTapCooldown--;
+
+        // We require TWO taps (to match real ASL)
+        if (avgDist < 0.15 && myNameTapCount >= 2) { // ❗ slightly larger max distance
+            myNameTapCount = 0; // reset for next time
+            return true;
+        }
+
+        return false;
+        }
+
+      function detectImGood(hand) {
+        const thumb = hand[4];
+        const wrist = hand[0];
+
+        const thumbUp = thumb.y < wrist.y && Math.abs(thumb.x - wrist.x) < 0.15;
+
+        let moved = false;
+        if (thumbPrevY !== null) {
+          moved = thumbPrevY - thumb.y > 0.01;
+        }
+        thumbPrevY = thumb.y;
+
+        return thumbUp && moved;
+      }
+
+      function detectNiceToMeetYou(landmarks, handedness) {
+        if (landmarks.length < 2) return false;
+
+        const left = handedness[0].label === "Left" ? landmarks[0] : landmarks[1];
+        const right = handedness[0].label === "Left" ? landmarks[1] : landmarks[0];
+
+        const lIndex = left[8];
+        const rIndex = right[8];
+        const distance = Math.hypot(lIndex.x - rIndex.x, lIndex.y - rIndex.y);
+
+        let closing = false;
+        if (meetPrevDist !== null) {
+          closing = meetPrevDist - distance > 0.015;
+        }
+        meetPrevDist = distance;
+
+        return distance < 0.15 && closing;
+      }
+
+      function checkAllCompleted() {
+        let completed = Array.from(document.querySelectorAll('.status'))
+          .every(status => status.textContent.includes('✅'));
+
+        if (completed) {
+          completedLessons[lessonKey] = true;
+          localStorage.setItem('completedLessons', JSON.stringify(completedLessons));
+          alert('Congratulations! You completed all responses in this lesson!');
+        }
+      }
+    });
+  </script>
+  <script src="../../js/app.js"></script>
+</body>
+</html>
