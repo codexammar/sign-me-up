@@ -133,8 +133,9 @@
   
           hands.onResults((results) => {
             // Resize canvas to match actual display size
-            canvasElement.width = canvasElement.clientWidth;
-            canvasElement.height = canvasElement.clientHeight;
+            const rect = canvasElement.getBoundingClientRect();
+            canvasElement.width = rect.width;
+            canvasElement.height = rect.height;
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
