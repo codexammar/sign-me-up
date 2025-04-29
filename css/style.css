@@ -639,8 +639,13 @@ html.dark-mode .lesson-card:hover {
 @media (max-width: 768px) {
     .input_video,
     .output_canvas {
-      width: 90vw; /* 90% of viewport width */
-      height: auto;
-      max-width: 90vw;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* or 'contain' if you want black bars */
+        border-radius: 12px;
+        display: block;
     }
 }
