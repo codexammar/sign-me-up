@@ -132,22 +132,22 @@
           });
   
           hands.onResults((results) => {
-            // Resize canvas to match actual display size
-            const dpr = window.devicePixelRatio || 1;
+            // Get display size of canvas
             const rect = canvasElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
             canvasElement.width = rect.width * dpr;
             canvasElement.height = rect.height * dpr;
-            canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
             canvasCtx.save();
+            canvasCtx.scale(dpr, dpr);
+
+            // Mirror horizontally
+            canvasCtx.scale(-1, 1);
+            canvasCtx.translate(-rect.width, 0);
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-            // 🪞 Mirror the canvas: affects image + landmarks
-            canvasCtx.scale(-1, 1);
-            canvasCtx.translate(-canvasElement.width, 0);
-
-            // 🖼️ Draw the mirrored webcam image
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            // Draw the mirrored webcam frame
+            canvasCtx.drawImage(results.image, 0, 0, rect.width, rect.height);
 
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 const landmarks = results.multiHandLandmarks[0];
